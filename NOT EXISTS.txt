@@ -1,0 +1,39 @@
+declare @max int, @curr int
+
+select @max = max(num) from Original
+
+set @curr = 0
+
+while @curr < @max
+
+begin
+
+set @curr = @curr + 1
+
+if(not EXISTS(select num from Original where num = @curr))
+
+begin
+
+                print 'Código ' + cast(@curr as char(3)) + ' não encontrado.'
+
+end
+
+end
+
+ 
+
+ 
+
+OUTRA FORMULA
+
+ 
+
+select a.num -1 from table_1 a
+
+where a.num <> 1 and not exists (
+
+select b.num from table_1 b where b.num = (a.num-1)
+
+)
+
+ 

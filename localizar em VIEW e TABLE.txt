@@ -1,0 +1,41 @@
+SE INTERDOC
+
+ 
+
+SELECT
+
+       CASE
+
+             WHEN SYSOBJX.XTYPE = 'U' THEN 'TABLE'
+
+             WHEN SYSOBJX.XTYPE = 'V' THEN 'VIEW'
+
+             ELSE '???'
+
+       END AS XTYPE,
+
+       SCHEMAX.TABLE_NAME,
+
+       SCHEMAX.COLUMN_NAME
+
+ 
+
+FROM information_schema.columns AS SCHEMAX
+
+       INNER JOIN sysobjects AS SYSOBJX
+
+       ON SCHEMAX.TABLE_NAME = SYSOBJX.NAME
+
+ 
+
+WHERE SCHEMAX.TABLE_CATALOG = 'INTERDOC'
+
+       AND SCHEMAX.TABLE_SCHEMA = 'DBO'
+
+       and (SCHEMAX.TABLE_NAME + SCHEMAX.COLUMN_NAME) LIKE ('%HORAS%')
+
+ 
+
+ORDER BY XTYPE, SCHEMAX.TABLE_NAME, SCHEMAX.COLUMN_NAME
+
+ 

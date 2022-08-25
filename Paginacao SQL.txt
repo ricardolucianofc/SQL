@@ -1,0 +1,151 @@
+USE ENTERPRISEPLUS
+
+ 
+
+--SEM PAGINAÇÃO
+
+SELECT USUARIO,MAQUINA
+
+FROM  HISTORICO_ATUALIZACOES_EPDM AS TBL
+
+WHERE DAY(TBL.DATA)=21 AND MONTH(TBL.DATA)=3 AND YEAR(TBL.DATA)=2013
+
+ 
+
+----------------------------------------------------------
+
+ 
+
+--COM PAGINAÇÃO
+
+SELECT USUARIO,MAQUINA
+
+FROM
+
+(
+
+SELECT TBL.*, ROW_NUMBER() OVER (ORDER BY ID_HISTORICO) ROWNUM
+
+FROM  HISTORICO_ATUALIZACOES_EPDM AS TBL
+
+WHERE DAY(TBL.DATA)=21 AND MONTH(TBL.DATA)=3 AND YEAR(TBL.DATA)=2013
+
+) SEQ
+
+   WHERE SEQ.ROWNUM  BETWEEN 10 AND 15
+
+  
+
+   
+
+   
+
+Query agenda EPDM com a paginação aplicada:
+
+ 
+
+select * from (
+
+select ROW_NUMBER() OVER (ORDER BY EnterprisePlus.dbo.getVariableValueDate(d.documentid, 'vITT_PrevisaoEmissao')) rownum,0 as [TASK], d.documentid, ew.type,
+
+dbo.GetNextUserIDToApprove(d.Documentid) as NextUserID,
+
+[CODIGO ITT] = LEFT(d.filename, CHARINDEX('.', d.Filename)-1),
+
+[REVISAO ITT]= EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_DocRevisao'),
+
+STATUS=s.Name, case ew.TYPE when 0 THEN 'POOL' when 1 THEN 'SEQUENCIAL' when 2 THEN 'PARALELO' end as [TIPO TRANSIÇÂO],
+
+TÍTULO=EnterprisePlus.dbo.sc_retornatitulo(d.DocumentID) ,
+
+[CÓDIGO CLIENTE]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodCliente'),
+
+[REVISAO CLIENTE]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_RevCliente'),
+
+[CÓDIGO UNIFICADO]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodUnificado'),
+
+[REVISAO UNIFICADA]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_RevUnificado'),
+
+[PREVISAO DE EMISSÃO]=EnterprisePlus.dbo.getVariableValueDate(d.documentid, 'vITT_PrevisaoEmissao'),
+
+case EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodDisciplina')
+
+when 'C' THEN 'CIVIL'
+
+when 'G' THEN 'GERAL'
+
+when 'M' THEN 'MECANICA'
+
+when 'E' THEN 'ELETRICA'
+
+when 'S' THEN 'SUPRIMENTOS'
+
+end as [DISCIPLINA]
+
+from EnterprisePlus.dbo.WORKFLOW ew with(nolock)
+
+inner join EnterprisePlus.dbo.DOCUMENT ed  with(nolock) on ed.IDWORKFLOWPLUS = ew.IDWORKFLOWPLUS
+
+inner join Intertechne..Documents d with(nolock)  on d.CurrentStatusID = ew.IDSTATEPDM  and d.DocumentID = ed.IDDOCUMENT
+
+left join EnterprisePlus.dbo.DOCUMENT_FLOW edf with(nolock)  on edf.IDDOCUMENT = ed.IDDOCUMENT and edf.IDUSERPDM = ew.IDUSERPDM
+
+left join Intertechne..Status s  with(nolock) on s.StatusID = ew.IDSTATEPDM
+
+where (ew.IDUSERPDM = 368)
+
+and d.deleted = 0 and  edf.IDUSERPDMAPPROVE is null
+
+) as T where (NextUserID = 368 or TYPE <> 1)
+
+and T.rownum BETWEEN 1150 AND 1200--UTILIZE PARA ESCOLHER ENTRE TODOS OS RESULTADOS, QUAIS VÃO SER EXIBIDOS
+
+ 
+
+UNION 
+
+ 
+
+select 0 as aa, 1 as [TASK], d.documentid, 0, 0,
+
+[CODIGO ITT] = LEFT(d.filename, CHARINDEX('.', d.Filename)-1), 
+
+[REVISAO ITT]= EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_DocRevisao'), 
+
+STATUS=s.Name,  'TAREFA',
+
+Titulo=EnterprisePlus.dbo.sc_retornatitulo(d.DocumentID) , 
+
+[CÓDIGO CLIENTE]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodCliente'), 
+
+[REVISAO CLIENTE]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_RevCliente'), 
+
+[CÓDIGO UNIFICADO]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodUnificado'), 
+
+[REVISAO UNIFICADA]=EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_RevUnificado'), 
+
+[PREVISAO DE EMISSÃO]=EnterprisePlus.dbo.getVariableValueDate(d.documentid, 'vITT_PrevisaoEmissao'), 
+
+case EnterprisePlus.dbo.getVariableValue(d.documentid, 'vITT_CodDisciplina') 
+
+when 'C' THEN 'CIVIL'  
+
+when 'G' THEN 'GERAL' 
+
+when 'M' THEN 'MECANICA' 
+
+when 'E' THEN 'ELETRICA' 
+
+when 'S' THEN 'SUPRIMENTOS' 
+
+end as [DISCIPLINA] 
+
+from EnterprisePlus.dbo.SubFluxo Sub  with(nolock) 
+
+inner join Intertechne..Documents d  with(nolock) on d.DocumentID = sub.IDDOCUMENT and d.CurrentStatusID = sub.IDSTATEPDM and d.Deleted = 0 
+
+inner join Intertechne..status s  with(nolock) on s.StatusID = d.CurrentStatusID  
+
+where(Sub.IDUSER = 368)  and sub.APPROVE is null
+
+order by [PREVISAO DE EMISSÃO]

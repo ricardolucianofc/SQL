@@ -1,0 +1,29 @@
+use interdoc
+
+--
+
+select nome_completo
+
+from pessoas where setor='informática' and ativo=1
+
+--
+
+GO
+
+WITH tabela AS
+
+(
+
+    SELECT nome_completo,
+
+    ROW_NUMBER() OVER (ORDER BY nome_completo) AS 'NumLinha'
+
+    FROM pessoas where setor='informática' and ativo=1
+
+)
+
+SELECT nome_completo
+
+FROM tabela
+
+WHERE NumLinha BETWEEN 6 AND 9 -–Retorna os registros a partir da 6ª linha até a 9ª do SELECT acima

@@ -1,0 +1,39 @@
+SELECT TOP 1
+
+  [CIELO]
+
+  ,[REDECARD]
+
+  ,[SANTANDER]
+
+  ,[AMERICANEXPRESS]
+
+  ,[GETNET]
+
+  ,[ELEVON]
+
+   FROM [Apontador].[dbo].[TBL_DADOS_GRAFICOS] order by data desc
+
+ 
+
+  
+
+   
+
+ SELECT Bandeira, Qtde
+
+FROM
+
+  (
+
+  SELECT TOP 1
+
+  [CIELO],[REDECARD],[SANTANDER],[AMERICANEXPRESS],[GETNET],[ELEVON]
+
+   FROM [Apontador].[dbo].[TBL_DADOS_GRAFICOS] order by data desc
+
+  ) P
+
+  UNPIVOT (Qtde FOR Bandeira IN ([CIELO],[REDECARD],[SANTANDER],[AMERICANEXPRESS],[GETNET],[ELEVON]
+
+  )) AS UP
