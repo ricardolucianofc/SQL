@@ -1,0 +1,5 @@
+DBCC CHECKIDENT (ADM_CODIGO_OPERADORA, noreseed) -- apenas consulta
+
+ 
+
+DBCC CHECKIDENT (ADM_CODIGO_OPERADORA, reseed, 88888) --redefine
